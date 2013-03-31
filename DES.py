@@ -1,3 +1,10 @@
+
+#This program is written by Uday Sagar Shiramshetty, studying 3rd year CSE, at MANIT-Bhopal
+#It is written according to the python 3 syntax. Just run this program and follow the instructions 
+#for encryption and decryption
+#Any comments may be addressed to udaysagar.2177@gmail.com
+
+
 s = [
 		# S1
 		[14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
@@ -321,10 +328,6 @@ def apply_pads():
 
 
 #main function
-
-#This program is written by Uday Sagar Shiramshetty, studying 3rd year CSE, at MANIT-Bhopal
-#It is written according to the python 3 syntax. Just run this program follow the instructions for encryption and decryption
-#Any comments may be addressed to udaysagar.2177@gmail.com
 
 def main():
     global text_bits, key, to_binary, bin_to_text, to_hex
