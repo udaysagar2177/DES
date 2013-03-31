@@ -106,6 +106,8 @@ comp_perm = [
 		43, 48, 38, 55, 33, 52,
 		45, 41, 49, 35, 28, 31
             ]
+to_hex = {'0000': '0', '0001': '1', '0010': '2', '0011': '3', '0100': '4', '0101': '5', '0110': '6', '0111': '7', '1000': '8', '1001': '9', '1010': 'a', '1011': 'b', '1100': 'c', '1101': 'd', '1110': 'e', '1111': 'f'}
+hex_to_bin = {v:k for k, v in to_hex.items()}
 get_row = {'00': 0, '01': 1, '10': 2, '11': 3}
 get_column = {'0000': 0, '0001': 1, '0010': 2, '0011': 3, '0100': 4, '0101': 5, '0110': 6, '0111': 7, '1000': 8, '1001': 9, '1010': 10, '1011': 11, '1100': 12, '1101': 13, '1110': 14, '1111': 15}
 to_binary = []
@@ -116,9 +118,12 @@ CD = []
 block = []
 left_block = []
 right_block = []
+bin_to_text = []
 
 def precompute():
-    global to_binary
+    global to_binary, bin_to_text
+    
+    # for calculation of 8-bit list for every character
     for n in range(128):
         b = [0,0,0,0,0,0,0,0]
         for i in range(0, 8):
@@ -126,21 +131,21 @@ def precompute():
                 b[7-i]=1
             n=n//2
         to_binary.append(b)
+
+    # for calculation of char from string of 8-bits
+    k = 0
+    bin_to_text = {}
+    for i in to_binary:
+        string = ''
+        for j in i:
+            string += str(j)
+        bin_to_text[string] = chr(k)
+        k += 1
+    
     return
 
-def get_text(filename):
-    f = open(filename, 'r')
-    data = f.readlines()
-    plaintext = ''
-    for i in data:
-        plaintext += i
-    no_of_pads = len(plaintext) % 8
-    
-    if(no_of_pads):
-        for i in range(8-no_of_pads):
-            plaintext += ('\0')
-    return plaintext
 
+#plain text to binary
 
 def get_bits(plaintext):
     global to_binary
@@ -149,6 +154,7 @@ def get_bits(plaintext):
         text_bits.extend(to_binary[ord(i)])
     return
 
+#input permutaion
 
 def apply_IP():
     global FP, block
@@ -160,6 +166,8 @@ def apply_IP():
     block.extend(dummy)
     return
 
+#final permutaion
+
 def apply_FP():
     global FP, block
     dummy = []
@@ -169,6 +177,8 @@ def apply_FP():
     block = []
     block.extend(dummy)
     return
+
+#exapansion permutation to expand 32 bit block into 48 bit block
 
 def expansion_permutation():
     global right_block, exp_perm
@@ -180,6 +190,8 @@ def expansion_permutation():
         j = i+6
         right_block.append(dummy[i:j])
     return
+
+#s-box function to reduce 48 bit block to 32 bit block
 
 def s_boxfunc():
     global s, right_block, to_binary, get_row, get_column
@@ -199,7 +211,7 @@ def s_boxfunc():
     right_block.extend(dummy)
     return
 
-
+#p-box permutation
 
 def p_boxfunc():
     global right_block, p_box
@@ -210,31 +222,29 @@ def p_boxfunc():
     right_block = []
     right_block.extend(dummy)
     return
+
+#iterating code for the 16 rounds
 	
 def rounds():
     global right_block, left_block, keys
     for j in range(0, 16):
         d9 = []
         d9.extend(right_block)
-
         expansion_permutation()
-
         for i in range(0, 8):
             di = i*6
             for k in range(0, 6):
                 right_block[i][k] ^= keys[j][di+k]
-
         s_boxfunc()
-        
         p_boxfunc()
-        
         for i in range(0, 32):
             right_block[i] ^= left_block[i]
 
         left_block = []
         left_block.extend(d9)
-        
     return
+
+#Heart of the program : DES algorithm
 
 def DES(start, end):
     global block, left_block, right_block, text_bits
@@ -260,22 +270,18 @@ def DES(start, end):
     cipher_block = ''
     for i in block:
         cipher_block += str(i)
-    return cipher
-
-def read_key():
-    global key, to_binary
-    f = open('key.txt', 'r')
-    data = f.readline()
-    for i in data:
-        key.extend(to_binary[ord(i)])
-    return
+    return cipher_block
     
+#left shifting according to the present round number
+
 def left_shift(times):
     global C, D
     for i in range(times):
         C.append(C.pop(0))
         D.append(D.pop(0))
     return
+
+# selection of bits to form the key
 
 def key_permutation():
     global CD, comp_perm, keys
@@ -285,8 +291,14 @@ def key_permutation():
     keys.append(dummy)
     return
 
+# key generation
+
 def generate_keys():
     global CD
+    for i in range(28):
+        C[i] = key[C[i]]
+    for i in range(28):
+        D[i] = key[D[i]]
     for i in range(0, 16):
         if(i==0 or i==1 or i==8 or i==15):
             left_shift(1)
@@ -298,19 +310,82 @@ def generate_keys():
         key_permutation()
     return
 
-def main():
+#adding bits to make an integer number of 64-bit blocks
+def apply_pads():
     global text_bits
+    no_of_pads = len(text_bits) % 64
+    if(no_of_pads):
+        for i in range(64-no_of_pads):
+            text_bits.append(0)
+    return
+
+
+#main function
+
+#This program is written by Uday Sagar Shiramshetty, studying 3rd year CSE, at MANIT-Bhopal
+#It is written according to the python 3 syntax. Just run this program follow the instructions for encryption and decryption
+#Any comments may be addressed to udaysagar.2177@gmail.com
+
+def main():
+    global text_bits, key, to_binary, bin_to_text, to_hex
     precompute()
-    read_key()
+
+    print('Enter the choice')
+    print('1. ENCRYPT A MESSAGE')
+    print('2. DECRYPT A MESSAGE')
+    choice = int(input())
+
+    print('Enter the key')
+    keytext = str(input())
+    for i in keytext:
+        key.extend(to_binary[ord(i)])
     generate_keys()
-    file_name = 'plaintext.txt'
-    get_bits(get_text(file_name))
-    
-    final_cipher = ''
-    for i in range(0, len(text_bits), 64):
-        final_cipher += DES(i, (i+64))
+
+    if(choice == 1):
+        print('Enter the message(in Text-form)')
+        plaintext = str(input())
+        get_bits(plaintext)
+        apply_pads()
         
-    print(final_cipher)
+        final_cipher = ''
+        for i in range(0, len(text_bits), 64):
+            final_cipher += DES(i, (i+64))
+
+        # conversion of binary cipher into hex-decimal form
+        hex_cipher = ''
+        i = 0
+        while i < len(final_cipher):
+            hex_cipher += to_hex[final_cipher[i:i+4]]
+            i = i+4
+        
+        print('the cipher is(in hex-decimal form)')
+        print(hex_cipher)
+        
+    else:
+        print('Enter the message(in hex-decimal form)')
+        cipher = str(input())
+        text_bits = []
+        ciphertext = ''
+        for i in cipher:
+            ciphertext += hex_to_bin[i]         #conversion of hex-decimal form to binary form
+        for i in ciphertext:
+            text_bits.append(int(i))
+        apply_pads()
+            
+        keys.reverse()
+        bin_mess = ''
+        for i in range(0, len(text_bits), 64):
+            bin_mess += DES(i, (i+64))
+
+        i = 0
+        text_mess = ''
+        while i < len(bin_mess):
+            text_mess += bin_to_text[bin_mess[i:i+8]]
+            i = i+8
+        
+        print('the original text is')
+        print(text_mess)
+        
     print('exiting...')
     return
 
