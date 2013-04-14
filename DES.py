@@ -1,4 +1,3 @@
-
 #This program is written by Uday Sagar Shiramshetty, studying 3rd year CSE, at MANIT-Bhopal
 #It is written according to the python 3 syntax. Just run this program and follow the instructions 
 #for encryption and decryption
@@ -125,7 +124,7 @@ CD = []
 block = []
 left_block = []
 right_block = []
-bin_to_text = []
+bin_to_text = {}
 
 def precompute():
     global to_binary, bin_to_text
