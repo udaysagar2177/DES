@@ -6,6 +6,11 @@
 from DESCommon import DES, generate_keys
 from DESUtil import to_binary, add_pads_if_necessary, hex_to_bin, bin_to_hex, bin_to_text
 
+try:
+    input = raw_input
+except NameError:
+    pass
+    
 def get_bits(plaintext):
     text_bits = []
     for i in plaintext:
@@ -18,11 +23,11 @@ def main():
     print('2. DECRYPT A MESSAGE')
     choice = int(input())
 
-    key_text = str(input('Enter the key '))
+    key_text = str(input('Enter the key\n'))
     keys = generate_keys(key_text)
 
     if(choice == 1):
-        plaintext = str(input('Enter the message(in Text-form) '))
+        plaintext = str(input('Enter the message(in Text-form)\n'))
         text_bits = get_bits(plaintext)
         text_bits = add_pads_if_necessary(text_bits)
 
@@ -68,5 +73,6 @@ def main():
     print('exiting...')
     return
 
-main()
+if __name__ == "__main__":
+    main()
 
