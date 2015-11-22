@@ -57,7 +57,7 @@ def decrypt(cipher, key_text):
 	while i < len(bin_mess):
 		text_mess += bin_to_text(bin_mess[i:i+8])
 		i = i+8
-	return text_mess
+	return text_mess.rstrip('\x00')
 
 def main():
     print('Enter the choice')
