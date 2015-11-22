@@ -67,6 +67,10 @@ def main():
 
     key_text = str(input('Enter the key\n'))
 
+    if(len(key_text) < 8):
+    	print('Key must be 8 characters in length. Exiting...')
+    	return
+
     if(choice == 1):
         plaintext = str(input('Enter the message(in Text-form)\n'))
         cipher = encrypt(plaintext, key_text)
