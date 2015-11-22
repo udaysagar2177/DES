@@ -56,7 +56,7 @@ def main():
             text_bits.append(int(i))
                 
         text_bits = add_pads_if_necessary(text_bits)
-        # keys.reverse()
+        keys.reverse()
         bin_mess = ''
         for i in range(0, len(text_bits), 64):
             bin_mess += DES(text_bits, i, (i+64), keys)
